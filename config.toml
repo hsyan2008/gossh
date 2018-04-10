@@ -15,6 +15,7 @@ auth  = "ssh密码、私钥文件或私钥文本"
 timeout = 5
 [proxy.分组名.inner.服务名]
 bind    = "本地绑定端口"
+is_http = 是否http代理，true(http/https) or false(socks5)
 is_ssh  = 是否指定走ssh，true or false
 is_pac  = 是否根据pac走ssh，true or false
-is_http = 是否http代理，true(http/https) or false(socks5)
+is_break= 如果不符合pac，是否中止, true or false
