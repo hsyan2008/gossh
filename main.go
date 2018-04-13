@@ -58,4 +58,6 @@ var domain = map[string]bool{
 	//白名单
 	"goanimate.com":    true,
 	"shutterstock.com": true,
+	"google.cn":        true,
+	"google.com.hk":    true,
 }
