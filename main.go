@@ -28,23 +28,33 @@ func main() {
 	logger.Info("create LocalForward")
 	for _, val := range Config.LocalForward {
 		for _, v := range val.Inner {
-			lf, err := ssh.NewLocalForward(val.SSHConfig, v)
-			if err != nil {
-				logger.Warn(err)
-				return
-			}
-			defer lf.Close()
+			go func(val ForwardServer, v ssh.ForwardIni) {
+				hfw.Wg.Add(1)
+				defer hfw.Wg.Done()
+				lf, err := ssh.NewLocalForward(val.SSHConfig, v)
+				if err != nil {
+					logger.Warn(err)
+					return
+				}
+				<-hfw.Shutdown
+				defer lf.Close()
+			}(val, v)
 		}
 	}
 	logger.Info("create Proxy")
 	for _, val := range Config.Proxy {
 		for _, v := range val.Inner {
-			p, err := ssh.NewProxy(val.SSHConfig, v)
-			if err != nil {
-				logger.Warn(err)
-				return
-			}
-			defer p.Close()
+			go func(val ProxyServer, v ssh.ProxyIni) {
+				hfw.Wg.Add(1)
+				defer hfw.Wg.Done()
+				p, err := ssh.NewProxy(val.SSHConfig, v)
+				if err != nil {
+					logger.Warn(err)
+					return
+				}
+				<-hfw.Shutdown
+				defer p.Close()
+			}(val, v)
 		}
 	}
 
