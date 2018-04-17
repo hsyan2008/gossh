@@ -1,0 +1,2 @@
+*.pac linguist-language=go
+*.toml linguist-language=go
