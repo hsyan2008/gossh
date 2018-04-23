@@ -1,0 +1,10 @@
+//黑名单
+googlevideo.com:false
+github.com:false
+
+//白名单
+goanimate.com:true
+shutterstock.com:true
+google.cn:true
+google.com.hk:true
+amazon.cn:true

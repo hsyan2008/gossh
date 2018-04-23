@@ -1,8 +1,12 @@
 package main
 
 import (
+	"io/ioutil"
+	"strings"
+
 	"github.com/hsyan2008/go-logger/logger"
 	hfw "github.com/hsyan2008/hfw2"
+	"github.com/hsyan2008/hfw2/common"
 	"github.com/hsyan2008/hfw2/pac"
 	"github.com/hsyan2008/hfw2/ssh"
 )
@@ -21,6 +25,7 @@ func main() {
 		logger.Warn(err)
 		return
 	}
+	domain := getDomain("domain.txt")
 	for k, v := range domain {
 		pac.Add(k, v)
 	}
@@ -61,13 +66,22 @@ func main() {
 	_ = hfw.Run()
 }
 
-var domain = map[string]bool{
-	//黑名单
-	"googlevideo.com": false,
-	"github.com":      false,
-	//白名单
-	"goanimate.com":    true,
-	"shutterstock.com": true,
-	"google.cn":        true,
-	"google.com.hk":    true,
+func getDomain(file string) (domain map[string]bool) {
+	domain = make(map[string]bool)
+	if !common.IsExist(file) {
+		return
+	}
+	fileContent, err := ioutil.ReadFile(file)
+	if err != nil {
+		return
+	}
+	lines := strings.Split(string(fileContent), "\n")
+	for _, line := range lines {
+		s := strings.Split(strings.ToLower(strings.TrimSpace(line)), ":")
+		if len(s) == 2 {
+			domain[s[0]] = s[1] == "true"
+		}
+	}
+
+	return
 }
