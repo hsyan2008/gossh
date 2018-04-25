@@ -63,7 +63,8 @@ func main() {
 		}
 	}
 
-	_ = hfw.Run()
+	hfw.Wg.Wait()
+	logger.Info("Shutdown")
 }
 
 func getDomain(file string) (domain map[string]bool) {
