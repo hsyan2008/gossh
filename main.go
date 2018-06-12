@@ -2,7 +2,10 @@ package main
 
 import (
 	"io/ioutil"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/hsyan2008/go-logger/logger"
 	hfw "github.com/hsyan2008/hfw2"
@@ -10,6 +13,8 @@ import (
 	"github.com/hsyan2008/hfw2/pac"
 	"github.com/hsyan2008/hfw2/ssh"
 )
+
+var domainFile = "domain.txt"
 
 func main() {
 	logger.Info("LoadConfig")
@@ -25,10 +30,8 @@ func main() {
 		logger.Warn(err)
 		return
 	}
-	domain := getDomain("domain.txt")
-	for k, v := range domain {
-		pac.Add(k, v)
-	}
+	customPac()
+	go listenSignal()
 
 	logger.Info("create LocalForward")
 	for _, val := range Config.LocalForward {
@@ -85,4 +88,27 @@ func getDomain(file string) (domain map[string]bool) {
 	}
 
 	return
+}
+
+func customPac() {
+	domain := getDomain(domainFile)
+	for k, v := range domain {
+		logger.Warn("pac", k, v)
+		pac.Add(k, v)
+	}
+}
+
+func listenSignal() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGUSR1)
+	for {
+		<-c
+		logger.Info("LoadPac")
+		err := pac.Reset()
+		if err != nil {
+			logger.Warn(err)
+		} else {
+			customPac()
+		}
+	}
 }
