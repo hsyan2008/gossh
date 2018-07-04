@@ -36,8 +36,8 @@ func main() {
 	logger.Info("create LocalForward")
 	for _, val := range Config.LocalForward {
 		for _, v := range val.Inner {
+			hfw.Wg.Add(1)
 			go func(val ForwardServer, v ssh.ForwardIni) {
-				hfw.Wg.Add(1)
 				defer hfw.Wg.Done()
 				lf, err := ssh.NewLocalForward(val.SSHConfig, v)
 				if err != nil {
@@ -52,8 +52,8 @@ func main() {
 	logger.Info("create Proxy")
 	for _, val := range Config.Proxy {
 		for _, v := range val.Inner {
+			hfw.Wg.Add(1)
 			go func(val ProxyServer, v ssh.ProxyIni) {
-				hfw.Wg.Add(1)
 				defer hfw.Wg.Done()
 				p, err := ssh.NewProxy(val.SSHConfig, v)
 				if err != nil {
