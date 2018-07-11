@@ -5,6 +5,7 @@
 addr  = "服务器ip:port"
 user  = "ssh帐号"
 auth  = "ssh密码、私钥文件或私钥文本"
+Phrase= "私钥的密码"
 [localForward.分组名.inner.服务名]
 addr  = "内网机器ip:port"
 bind  = "本地绑定端口"
@@ -14,6 +15,7 @@ bind  = "本地绑定端口"
 addr  = "服务器ip:port"
 user  = "ssh帐号"
 auth  = "ssh密码、私钥文件或私钥文本"
+Phrase= "私钥的密码"
 timeout = 5
 [proxy.分组名.inner.服务名]
 bind    = "本地绑定端口"
