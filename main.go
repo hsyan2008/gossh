@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -14,7 +15,7 @@ import (
 	"github.com/hsyan2008/hfw2/ssh"
 )
 
-var domainFile = "domain.txt"
+var domainFile = filepath.Join(hfw.APPPATH, "domain.txt")
 
 func main() {
 	logger.Info("LoadConfig")
@@ -36,15 +37,15 @@ func main() {
 	logger.Info("create LocalForward")
 	for _, val := range Config.LocalForward {
 		for _, v := range val.Inner {
-			hfw.Wg.Add(1)
+			hfw.Ctx.WgAdd()
 			go func(val ForwardServer, v ssh.ForwardIni) {
-				defer hfw.Wg.Done()
+				defer hfw.Ctx.WgDone()
 				lf, err := ssh.NewLocalForward(val.SSHConfig, v)
 				if err != nil {
 					logger.Warn(err)
 					return
 				}
-				<-hfw.Shutdown
+				<-hfw.Ctx.Shutdown
 				defer lf.Close()
 			}(val, v)
 		}
@@ -52,21 +53,21 @@ func main() {
 	logger.Info("create Proxy")
 	for _, val := range Config.Proxy {
 		for _, v := range val.Inner {
-			hfw.Wg.Add(1)
+			hfw.Ctx.WgAdd()
 			go func(val ProxyServer, v ssh.ProxyIni) {
-				defer hfw.Wg.Done()
+				defer hfw.Ctx.WgDone()
 				p, err := ssh.NewProxy(val.SSHConfig, v)
 				if err != nil {
 					logger.Warn(err)
 					return
 				}
-				<-hfw.Shutdown
+				<-hfw.Ctx.Shutdown
 				defer p.Close()
 			}(val, v)
 		}
 	}
 
-	hfw.Wg.Wait()
+	hfw.Ctx.WgWait()
 	logger.Info("Shutdown")
 }
 
@@ -91,6 +92,7 @@ func getDomain(file string) (domain map[string]bool) {
 }
 
 func customPac() {
+	logger.Info(domainFile)
 	domain := getDomain(domainFile)
 	for k, v := range domain {
 		logger.Warn("pac", k, v)
