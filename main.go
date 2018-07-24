@@ -18,6 +18,7 @@ import (
 var domainFile = filepath.Join(hfw.APPPATH, "domain.txt")
 
 func main() {
+	hfw.Init()
 	logger.Info("LoadConfig")
 	err := LoadConfig()
 	if err != nil {
