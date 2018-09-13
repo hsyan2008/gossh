@@ -18,7 +18,6 @@ import (
 var domainFile = filepath.Join(hfw.APPPATH, "domain.txt")
 
 func main() {
-	hfw.Init()
 	logger.Info("LoadConfig")
 	err := LoadConfig()
 	if err != nil {
@@ -35,18 +34,20 @@ func main() {
 	customPac()
 	go listenSignal()
 
+	signalContext := hfw.GetSignalContext()
+
 	logger.Info("create LocalForward")
 	for _, val := range Config.LocalForward {
 		for _, v := range val.Inner {
-			hfw.Ctx.WgAdd()
+			signalContext.WgAdd()
 			go func(val ForwardServer, v ssh.ForwardIni) {
-				defer hfw.Ctx.WgDone()
+				defer signalContext.WgDone()
 				lf, err := ssh.NewLocalForward(val.SSHConfig, v)
 				if err != nil {
 					logger.Warn(err)
 					return
 				}
-				<-hfw.Ctx.Shutdown
+				<-signalContext.Ctx.Done()
 				defer lf.Close()
 			}(val, v)
 		}
@@ -54,21 +55,21 @@ func main() {
 	logger.Info("create Proxy")
 	for _, val := range Config.Proxy {
 		for _, v := range val.Inner {
-			hfw.Ctx.WgAdd()
+			signalContext.WgAdd()
 			go func(val ProxyServer, v ssh.ProxyIni) {
-				defer hfw.Ctx.WgDone()
+				defer signalContext.WgDone()
 				p, err := ssh.NewProxy(val.SSHConfig, v)
 				if err != nil {
 					logger.Warn(err)
 					return
 				}
-				<-hfw.Ctx.Shutdown
+				<-signalContext.Ctx.Done()
 				defer p.Close()
 			}(val, v)
 		}
 	}
 
-	hfw.Ctx.WgWait()
+	signalContext.WgWait()
 	logger.Info("Shutdown")
 }
 
