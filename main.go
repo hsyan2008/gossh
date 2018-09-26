@@ -102,9 +102,10 @@ func customPac() {
 	}
 }
 
+//reload pac
 func listenSignal() {
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGUSR1)
+	signal.Notify(c, syscall.SIGFPE)
 	for {
 		<-c
 		logger.Info("LoadPac")

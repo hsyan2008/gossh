@@ -13,3 +13,18 @@
 * 支持多个环境(每个环境单个跳板机)
 * 支持多个内部机器
 * 支持批量创建
+
+## 使用方法
+* 安装[golang](https://www.golang.org/)
+* 执行如下命令
+    
+        mkdir ~/go
+        GOPATH=~/go
+        go get -u github.com/gossh
+        cd ~/go/src/github.com/gossh
+        go build            #win下有cmd窗口，使用go build -ldflags -H=windowsgui
+* 编辑config.toml和domain.txt
+* 启动
+
+        ./gossh   #win下是./gossh.exe
+## 也可以到release直接下载已经编译好的
