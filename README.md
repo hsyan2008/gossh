@@ -27,4 +27,3 @@
 * 启动
 
         ./gossh   #win下是./gossh.exe
-## 也可以到release直接下载已经编译好的
