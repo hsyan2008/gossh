@@ -37,7 +37,7 @@ func main() {
 	signalContext := hfw.GetSignalContext()
 
 	logger.Info("create LocalForward")
-	for _, val := range Config.LocalForward {
+	for key, val := range Config.LocalForward {
 		for _, v := range val.Inner {
 			signalContext.WgAdd()
 			go func(val ForwardServer, v ssh.ForwardIni) {
@@ -50,6 +50,26 @@ func main() {
 				<-signalContext.Ctx.Done()
 				defer lf.Close()
 			}(val, v)
+		}
+		for _, val2 := range Config.LocalForward[key].Indirect {
+			for _, v := range val2.Inner {
+				signalContext.WgAdd()
+				go func(val ForwardServer, v ssh.ForwardIni) {
+					defer signalContext.WgDone()
+					lf, err := ssh.NewLocalForward(val.SSHConfig, ssh.ForwardIni{})
+					if err != nil {
+						logger.Warn(err)
+						return
+					}
+					err = lf.Dial(val2.SSHConfig, v)
+					if err != nil {
+						logger.Warn(err)
+						return
+					}
+					<-signalContext.Ctx.Done()
+					defer lf.Close()
+				}(val, v)
+			}
 		}
 	}
 	logger.Info("create Proxy")

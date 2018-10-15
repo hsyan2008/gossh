@@ -72,6 +72,15 @@ type tomlConfig struct {
 }
 
 type ForwardServer struct {
+	// Forward
+	ssh.SSHConfig
+	Inner map[string]ssh.ForwardIni
+
+	//二次登陆ssh
+	Indirect map[string]Forward
+}
+
+type Forward struct {
 	ssh.SSHConfig
 	Inner map[string]ssh.ForwardIni
 }
