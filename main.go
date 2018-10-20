@@ -8,7 +8,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hsyan2008/go-logger/logger"
+	logger "github.com/hsyan2008/go-logger"
 	hfw "github.com/hsyan2008/hfw2"
 	"github.com/hsyan2008/hfw2/common"
 	"github.com/hsyan2008/hfw2/pac"
