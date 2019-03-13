@@ -1,6 +1,7 @@
 package main
 
 import (
+	"gossh/config"
 	"io/ioutil"
 	"os"
 	"os/signal"
@@ -12,6 +13,7 @@ import (
 	hfw "github.com/hsyan2008/hfw2"
 	"github.com/hsyan2008/hfw2/common"
 	"github.com/hsyan2008/hfw2/pac"
+	hfwsignal "github.com/hsyan2008/hfw2/signal"
 	"github.com/hsyan2008/hfw2/ssh"
 )
 
@@ -19,7 +21,7 @@ var domainFile = filepath.Join(hfw.APPPATH, "domain.txt")
 
 func main() {
 	logger.Info("LoadConfig")
-	err := LoadConfig()
+	err := config.LoadConfig()
 	if err != nil {
 		logger.Warn(err)
 		return
@@ -34,13 +36,13 @@ func main() {
 	customPac()
 	go listenSignal()
 
-	signalContext := hfw.GetSignalContext()
+	signalContext := hfwsignal.GetSignalContext()
 
 	logger.Info("create LocalForward")
-	for key, val := range Config.LocalForward {
+	for key, val := range config.Config.LocalForward {
 		for _, v := range val.Inner {
 			signalContext.WgAdd()
-			go func(val ForwardServer, v ssh.ForwardIni) {
+			go func(val config.ForwardServer, v ssh.ForwardIni) {
 				defer signalContext.WgDone()
 				lf, err := ssh.NewLocalForward(val.SSHConfig, v)
 				if err != nil {
@@ -51,10 +53,10 @@ func main() {
 				defer lf.Close()
 			}(val, v)
 		}
-		for _, val2 := range Config.LocalForward[key].Indirect {
+		for _, val2 := range config.Config.LocalForward[key].Indirect {
 			for _, v := range val2.Inner {
 				signalContext.WgAdd()
-				go func(val ForwardServer, v ssh.ForwardIni) {
+				go func(val config.ForwardServer, v ssh.ForwardIni) {
 					defer signalContext.WgDone()
 					lf, err := ssh.NewLocalForward(val.SSHConfig, ssh.ForwardIni{})
 					if err != nil {
@@ -73,10 +75,10 @@ func main() {
 		}
 	}
 	logger.Info("create Proxy")
-	for _, val := range Config.Proxy {
+	for _, val := range config.Config.Proxy {
 		for _, v := range val.Inner {
 			signalContext.WgAdd()
-			go func(val ProxyServer, v ssh.ProxyIni) {
+			go func(val config.ProxyServer, v ssh.ProxyIni) {
 				defer signalContext.WgDone()
 				p, err := ssh.NewProxy(val.SSHConfig, v)
 				if err != nil {
