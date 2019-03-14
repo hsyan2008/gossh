@@ -2,16 +2,10 @@ package main
 
 import (
 	"gossh/config"
-	"io/ioutil"
-	"os"
-	"os/signal"
 	"path/filepath"
-	"strings"
-	"syscall"
 
 	logger "github.com/hsyan2008/go-logger"
 	hfw "github.com/hsyan2008/hfw2"
-	"github.com/hsyan2008/hfw2/common"
 	"github.com/hsyan2008/hfw2/pac"
 	hfwsignal "github.com/hsyan2008/hfw2/signal"
 	"github.com/hsyan2008/hfw2/ssh"
@@ -26,6 +20,7 @@ func main() {
 		logger.Warn(err)
 		return
 	}
+	logger.Warn(config.Config)
 
 	logger.Info("LoadPac")
 	err = pac.LoadDefault()
@@ -33,8 +28,6 @@ func main() {
 		logger.Warn(err)
 		return
 	}
-	customPac()
-	go listenSignal()
 
 	signalContext := hfwsignal.GetSignalContext()
 
@@ -76,6 +69,7 @@ func main() {
 	}
 	logger.Info("create Proxy")
 	for _, val := range config.Config.Proxy {
+		customPac(val.DomainPac)
 		for _, v := range val.Inner {
 			signalContext.WgAdd()
 			go func(val config.ProxyServer, v ssh.ProxyIni) {
@@ -95,47 +89,14 @@ func main() {
 	logger.Info("Shutdown")
 }
 
-func getDomain(file string) (domain map[string]bool) {
-	domain = make(map[string]bool)
-	if !common.IsExist(file) {
-		return
+func customPac(domainPac config.DomainPac) {
+	logger.Infof("%#v", domainPac)
+	for _, v := range domainPac.Deny {
+		logger.Warn("pac", v, false)
+		pac.Add(v, false)
 	}
-	fileContent, err := ioutil.ReadFile(file)
-	if err != nil {
-		return
-	}
-	lines := strings.Split(string(fileContent), "\n")
-	for _, line := range lines {
-		s := strings.Split(strings.ToLower(strings.TrimSpace(line)), ":")
-		if len(s) == 2 {
-			domain[s[0]] = s[1] == "true"
-		}
-	}
-
-	return
-}
-
-func customPac() {
-	logger.Info(domainFile)
-	domain := getDomain(domainFile)
-	for k, v := range domain {
-		logger.Warn("pac", k, v)
-		pac.Add(k, v)
-	}
-}
-
-//reload pac
-func listenSignal() {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGFPE)
-	for {
-		<-c
-		logger.Info("LoadPac")
-		err := pac.Reset()
-		if err != nil {
-			logger.Warn(err)
-		} else {
-			customPac()
-		}
+	for _, v := range domainPac.Allow {
+		logger.Warn("pac", v, true)
+		pac.Add(v, true)
 	}
 }

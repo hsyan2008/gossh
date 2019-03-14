@@ -34,3 +34,6 @@ is_http = 是否http代理，true(http/https) or false(socks5)
 is_ssh  = 是否指定走ssh，true or false
 is_pac  = 是否根据pac走ssh，true or false
 is_break= 如果不符合pac，是否中止, true or false
+[proxy.分组名.domainpac]
+deny=["不许访问的域名1","不许访问的域名2"]
+allow=["允许访问的域名3","允许访问的域名4"]

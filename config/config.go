@@ -87,5 +87,14 @@ type Forward struct {
 
 type ProxyServer struct {
 	ssh.SSHConfig
-	Inner map[string]ssh.ProxyIni
+	Inner     map[string]ssh.ProxyIni
+	DomainPac DomainPac
+}
+
+//is_pac设置下才有效
+type DomainPac struct {
+	//不允许访问
+	Deny []string
+	//允许访问
+	Allow []string
 }
