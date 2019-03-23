@@ -1,17 +1,14 @@
 package main
 
 import (
-	"gossh/config"
-	"path/filepath"
-
 	logger "github.com/hsyan2008/go-logger"
+	"github.com/hsyan2008/gossh/config"
+	"github.com/hsyan2008/gossh/controllers"
 	hfw "github.com/hsyan2008/hfw2"
 	"github.com/hsyan2008/hfw2/pac"
 	hfwsignal "github.com/hsyan2008/hfw2/signal"
 	"github.com/hsyan2008/hfw2/ssh"
 )
-
-var domainFile = filepath.Join(hfw.APPPATH, "domain.txt")
 
 func main() {
 	logger.Info("LoadConfig")
@@ -87,6 +84,10 @@ func main() {
 
 	signalContext.WgWait()
 	logger.Info("Shutdown")
+
+	hfw.Handler("/pac", &controllers.Pac{})
+	hfw.Config.Server.Address = ":44444"
+	hfw.Run()
 }
 
 func customPac(domainPac config.DomainPac) {

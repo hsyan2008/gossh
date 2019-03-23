@@ -1,0 +1,24 @@
+var domains = {
+%s
+};
+ 
+var proxy = "PROXY 192.168.1.174:19891; SOCKS5 192.168.1.174:7091; DIRECT;";
+ 
+var direct = 'DIRECT;';
+ 
+function FindProxyForURL(url, host) {
+
+    url  = url.toLowerCase();
+    host = host.toLowerCase();
+
+    var lastPos;
+    do {
+        if (domains.hasOwnProperty(host)) {
+            return proxy;
+        }
+        lastPos = host.indexOf('.') + 1;
+        host = host.slice(lastPos);
+    } while (lastPos >= 1);
+
+    return direct;
+}
