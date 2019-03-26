@@ -7,13 +7,14 @@ import (
 
 	hfw "github.com/hsyan2008/hfw2"
 	"github.com/hsyan2008/hfw2/ssh"
+	"github.com/hsyan2008/hfw2/tomlutil"
 )
 
 var Config tomlConfig
 
 func LoadConfig() (err error) {
 	tomlfile := filepath.Join(hfw.APPPATH, "config.toml")
-	err = hfw.TomlLoad(tomlfile, &Config)
+	err = tomlutil.Load(tomlfile, &Config)
 	if err != nil {
 		return err
 	}
