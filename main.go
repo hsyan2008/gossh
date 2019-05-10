@@ -39,8 +39,8 @@ func main() {
 					logger.Warn(err)
 					return
 				}
-				<-signalContext.Ctx.Done()
 				defer lf.Close()
+				<-signalContext.Ctx.Done()
 			}(val, v)
 		}
 		for _, val2 := range config.Config.LocalForward[key].Indirect {
@@ -53,13 +53,13 @@ func main() {
 						logger.Warn(err)
 						return
 					}
+					defer lf.Close()
 					err = lf.Dial(val2.SSHConfig, v)
 					if err != nil {
 						logger.Warn(err)
 						return
 					}
 					<-signalContext.Ctx.Done()
-					defer lf.Close()
 				}(val, v)
 			}
 		}
@@ -76,8 +76,8 @@ func main() {
 					logger.Warn(err)
 					return
 				}
-				<-signalContext.Ctx.Done()
 				defer p.Close()
+				<-signalContext.Ctx.Done()
 			}(val, v)
 		}
 	}
