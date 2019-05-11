@@ -75,7 +75,7 @@ type tomlConfig struct {
 type ForwardServer struct {
 	// Forward
 	ssh.SSHConfig
-	Inner map[string]ssh.ForwardIni
+	Inner map[string]*ssh.ForwardIni
 
 	//二次登陆ssh
 	Indirect map[string]Forward
@@ -83,12 +83,12 @@ type ForwardServer struct {
 
 type Forward struct {
 	ssh.SSHConfig
-	Inner map[string]ssh.ForwardIni
+	Inner map[string]*ssh.ForwardIni
 }
 
 type ProxyServer struct {
 	ssh.SSHConfig
-	Inner     map[string]ssh.ProxyIni
+	Inner     map[string]*ssh.ProxyIni
 	DomainPac DomainPac
 }
 

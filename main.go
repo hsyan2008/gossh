@@ -30,46 +30,41 @@ func main() {
 
 	logger.Info("create LocalForward")
 	for key, val := range config.Config.LocalForward {
-		for _, v := range val.Inner {
-			signalContext.WgAdd()
-			go func(val config.ForwardServer, v ssh.ForwardIni) {
-				defer signalContext.WgDone()
+		signalContext.WgAdd()
+		go func(key string, val config.ForwardServer) {
+			defer signalContext.WgDone()
+			for _, v := range val.Inner {
 				lf, err := ssh.NewLocalForward(val.SSHConfig, v)
 				if err != nil {
-					logger.Warn(err)
+					logger.Warn(val.SSHConfig, err)
 					return
 				}
 				defer lf.Close()
-				<-signalContext.Ctx.Done()
-			}(val, v)
-		}
-		for _, val2 := range config.Config.LocalForward[key].Indirect {
-			for _, v := range val2.Inner {
-				signalContext.WgAdd()
-				go func(val config.ForwardServer, v ssh.ForwardIni) {
-					defer signalContext.WgDone()
-					lf, err := ssh.NewLocalForward(val.SSHConfig, ssh.ForwardIni{})
-					if err != nil {
-						logger.Warn(err)
-						return
-					}
-					defer lf.Close()
+			}
+			for _, val2 := range config.Config.LocalForward[key].Indirect {
+				lf, err := ssh.NewLocalForward(val.SSHConfig, nil)
+				if err != nil {
+					logger.Warn(val.SSHConfig, err)
+					return
+				}
+				defer lf.Close()
+				for _, v := range val2.Inner {
 					err = lf.Dial(val2.SSHConfig, v)
 					if err != nil {
-						logger.Warn(err)
+						logger.Warn(val2, err)
 						return
 					}
-					<-signalContext.Ctx.Done()
-				}(val, v)
+				}
 			}
-		}
+			<-signalContext.Ctx.Done()
+		}(key, val)
 	}
 	logger.Info("create Proxy")
 	for _, val := range config.Config.Proxy {
 		customPac(val.DomainPac)
 		for _, v := range val.Inner {
 			signalContext.WgAdd()
-			go func(val config.ProxyServer, v ssh.ProxyIni) {
+			go func(val config.ProxyServer, v *ssh.ProxyIni) {
 				defer signalContext.WgDone()
 				p, err := ssh.NewProxy(val.SSHConfig, v)
 				if err != nil {
