@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	logger "github.com/hsyan2008/go-logger"
 	"github.com/hsyan2008/gossh/config"
 	"github.com/hsyan2008/gossh/controllers"
@@ -31,6 +33,7 @@ func main() {
 	logger.Info("create LocalForward")
 	for key, val := range config.Config.LocalForward {
 		signalContext.WgAdd()
+		time.Sleep(val.Delay * time.Second)
 		go func(key string, val config.ForwardServer) {
 			defer signalContext.WgDone()
 			for _, v := range val.Inner {
@@ -61,20 +64,21 @@ func main() {
 	}
 	logger.Info("create Proxy")
 	for _, val := range config.Config.Proxy {
+		time.Sleep(val.Delay * time.Second)
 		customPac(val.DomainPac)
-		for _, v := range val.Inner {
-			signalContext.WgAdd()
-			go func(val config.ProxyServer, v *ssh.ProxyIni) {
-				defer signalContext.WgDone()
+		signalContext.WgAdd()
+		go func(val config.ProxyServer) {
+			defer signalContext.WgDone()
+			for _, v := range val.Inner {
 				p, err := ssh.NewProxy(val.SSHConfig, v)
 				if err != nil {
 					logger.Warn(err)
 					return
 				}
 				defer p.Close()
-				<-signalContext.Ctx.Done()
-			}(val, v)
-		}
+			}
+			<-signalContext.Ctx.Done()
+		}(val)
 	}
 
 	signalContext.WgWait()

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"path/filepath"
 	"strings"
+	"time"
 
 	hfw "github.com/hsyan2008/hfw2"
 	"github.com/hsyan2008/hfw2/ssh"
@@ -75,19 +76,21 @@ type tomlConfig struct {
 type ForwardServer struct {
 	// Forward
 	ssh.SSHConfig
+	Delay time.Duration
 	Inner map[string]*ssh.ForwardIni
 
 	//二次登陆ssh
-	Indirect map[string]Forward
+	Indirect map[string]ForwardIndirect
 }
 
-type Forward struct {
+type ForwardIndirect struct {
 	ssh.SSHConfig
 	Inner map[string]*ssh.ForwardIni
 }
 
 type ProxyServer struct {
 	ssh.SSHConfig
+	Delay     time.Duration
 	Inner     map[string]*ssh.ProxyIni
 	DomainPac DomainPac
 }
