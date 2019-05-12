@@ -33,9 +33,9 @@ func main() {
 	logger.Info("create LocalForward")
 	for key, val := range config.Config.LocalForward {
 		signalContext.WgAdd()
-		time.Sleep(val.Delay * time.Second)
 		go func(key string, val config.ForwardServer) {
 			defer signalContext.WgDone()
+			time.Sleep(val.Delay * time.Second)
 			for _, v := range val.Inner {
 				lf, err := ssh.NewLocalForward(val.SSHConfig, v)
 				if err != nil {
@@ -64,11 +64,11 @@ func main() {
 	}
 	logger.Info("create Proxy")
 	for _, val := range config.Config.Proxy {
-		time.Sleep(val.Delay * time.Second)
 		customPac(val.DomainPac)
 		signalContext.WgAdd()
 		go func(val config.ProxyServer) {
 			defer signalContext.WgDone()
+			time.Sleep(val.Delay * time.Second)
 			for _, v := range val.Inner {
 				p, err := ssh.NewProxy(val.SSHConfig, v)
 				if err != nil {
