@@ -81,12 +81,16 @@ func main() {
 		}(val)
 	}
 
+	go func() {
+		hfw.Config.Server.Address = ":44444"
+		hfw.Config.Route.DefaultController = "index"
+		hfw.Config.Route.DefaultAction = "index"
+		hfw.Handler("/pac", &controllers.Pac{})
+		hfw.Run()
+	}()
+
 	signalContext.WgWait()
 	logger.Info("Shutdown")
-
-	hfw.Handler("/pac", &controllers.Pac{})
-	hfw.Config.Server.Address = ":44444"
-	hfw.Run()
 }
 
 func customPac(domainPac config.DomainPac) {

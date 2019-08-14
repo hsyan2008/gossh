@@ -15,7 +15,7 @@ type Pac struct {
 }
 
 func (ctl *Pac) Index(httpCtx *hfw.HTTPContext) {
-	httpCtx.TemplateFile = "pac.html"
+	// httpCtx.TemplateFile = "pac.html"
 
 	list := pac.GetAll()
 	if len(list) == 0 {
@@ -33,9 +33,7 @@ func (ctl *Pac) Index(httpCtx *hfw.HTTPContext) {
 
 	//直接输出，双引号会被转义，所以手动处理
 	context, err := ioutil.ReadFile("pac.html")
-	if err != nil {
-		return
-	}
+	httpCtx.ThrowCheck(500, err)
 
 	httpCtx.Template = fmt.Sprintf(string(context), txt)
 }
