@@ -16,15 +16,16 @@ func main() {
 	logger.Info("LoadConfig")
 	err := config.LoadConfig()
 	if err != nil {
-		logger.Warn(err)
+		logger.Warn("LoadConfig", err)
 		return
 	}
 	logger.Warn(config.Config)
 
 	logger.Info("LoadPac")
-	err = pac.LoadDefault()
+	// err = pac.LoadDefault()
+	err = pac.LoadFromPac()
 	if err != nil {
-		logger.Warn(err)
+		logger.Warn("LoadPac", err)
 		return
 	}
 
