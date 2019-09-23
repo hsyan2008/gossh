@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hsyan2008/hfw"
 	"github.com/hsyan2008/hfw/configs"
 	"github.com/hsyan2008/hfw/ssh"
 )
@@ -12,6 +13,9 @@ import (
 var Config tomlConfig
 
 func LoadConfig() (err error) {
+	//初始化log写入文件
+	_ = hfw.Init()
+
 	err = configs.Load(&Config)
 	if err != nil {
 		return err
