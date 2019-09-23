@@ -6,17 +6,17 @@ import (
 	logger "github.com/hsyan2008/go-logger"
 	"github.com/hsyan2008/gossh/config"
 	"github.com/hsyan2008/gossh/controllers"
-	hfw "github.com/hsyan2008/hfw2"
-	"github.com/hsyan2008/hfw2/pac"
-	hfwsignal "github.com/hsyan2008/hfw2/signal"
-	"github.com/hsyan2008/hfw2/ssh"
+	"github.com/hsyan2008/hfw"
+	"github.com/hsyan2008/hfw/pac"
+	hfwsignal "github.com/hsyan2008/hfw/signal"
+	"github.com/hsyan2008/hfw/ssh"
 )
 
 func main() {
 	logger.Info("LoadConfig")
 	err := config.LoadConfig()
 	if err != nil {
-		logger.Warn("LoadConfig", err)
+		logger.Warn("LoadConfig:", err)
 		return
 	}
 	logger.Warn(config.Config)
@@ -25,7 +25,7 @@ func main() {
 	// err = pac.LoadDefault()
 	err = pac.LoadFromPac()
 	if err != nil {
-		logger.Warn("LoadPac", err)
+		logger.Warn("LoadPac:", err)
 		return
 	}
 

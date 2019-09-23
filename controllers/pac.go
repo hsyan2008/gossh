@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/hsyan2008/gossh/core"
-	hfw "github.com/hsyan2008/hfw2"
-	"github.com/hsyan2008/hfw2/pac"
+	"github.com/hsyan2008/hfw"
+	"github.com/hsyan2008/hfw/pac"
 )
 
 type Pac struct {

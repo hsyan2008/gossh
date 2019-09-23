@@ -2,20 +2,17 @@ package config
 
 import (
 	"errors"
-	"path/filepath"
 	"strings"
 	"time"
 
-	hfw "github.com/hsyan2008/hfw2"
-	"github.com/hsyan2008/hfw2/ssh"
-	"github.com/hsyan2008/hfw2/tomlutil"
+	"github.com/hsyan2008/hfw/configs"
+	"github.com/hsyan2008/hfw/ssh"
 )
 
 var Config tomlConfig
 
 func LoadConfig() (err error) {
-	tomlfile := filepath.Join(hfw.APPPATH, "config.toml")
-	err = tomlutil.Load(tomlfile, &Config)
+	err = configs.Load(&Config)
 	if err != nil {
 		return err
 	}

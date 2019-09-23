@@ -1,6 +1,6 @@
 package core
 
-import hfw "github.com/hsyan2008/hfw2"
+import "github.com/hsyan2008/hfw"
 
 type Controller struct {
 	hfw.Controller
