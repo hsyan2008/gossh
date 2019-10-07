@@ -13,3 +13,5 @@
 .glide/
 
 go.sum
+
+Makefile
