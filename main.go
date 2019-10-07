@@ -22,8 +22,7 @@ func main() {
 	logger.Warn(config.Config)
 
 	logger.Info("LoadPac")
-	// err = pac.LoadDefault()
-	err = pac.LoadFromPac()
+	err = pac.LoadDefault()
 	if err != nil {
 		logger.Warn("LoadPac:", err)
 		return
