@@ -31,21 +31,21 @@ func main() {
 	signalContext := hfwsignal.GetSignalContext()
 
 	logger.Info("create LocalForward")
-	for key, val := range config.Config.LocalForward {
+	for key, val := range config.Config.Forward {
 		signalContext.WgAdd()
 		go func(key string, val config.ForwardServer) {
 			defer signalContext.WgDone()
 			time.Sleep(val.Delay * time.Second)
 			for _, v := range val.Inner {
-				lf, err := ssh.NewLocalForward(val.SSHConfig, v)
+				lf, err := ssh.NewForward(val.Type, val.SSHConfig, v)
 				if err != nil {
 					logger.Warn(val.SSHConfig, err)
 					return
 				}
 				defer lf.Close()
 			}
-			for _, val2 := range config.Config.LocalForward[key].Indirect {
-				lf, err := ssh.NewLocalForward(val.SSHConfig, nil)
+			for _, val2 := range config.Config.Forward[key].Indirect {
+				lf, err := ssh.NewForward(val.Type, val.SSHConfig, nil)
 				if err != nil {
 					logger.Warn(val.SSHConfig, err)
 					return
@@ -86,11 +86,9 @@ func main() {
 		hfw.Config.Route.DefaultController = "index"
 		hfw.Config.Route.DefaultAction = "index"
 		hfw.Handler("/pac", &controllers.Pac{})
-		hfw.Run()
 	}()
 
-	signalContext.WgWait()
-	logger.Info("Shutdown")
+	hfw.Run()
 }
 
 func customPac(domainPac config.DomainPac) {

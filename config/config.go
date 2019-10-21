@@ -21,18 +21,33 @@ func LoadConfig() (err error) {
 		return err
 	}
 
+	if len(Config.Forward) == 0 && len(Config.Proxy) == 0 {
+		return errors.New("config is nil")
+	}
+
 	//检查所有local里是否有相同的bind，检查每个remote里的inner是否有相同的bind
+	//remote的bind是在远端，不需要加到本地判断
 	tmp := make(map[string]bool)
-	for key, val := range Config.LocalForward {
+	tmpRemote := make(map[string]bool)
+	for key, val := range Config.Forward {
 		for k, v := range val.Inner {
 			if !strings.Contains(v.Bind, ":") {
 				v.Bind = ":" + v.Bind
-				Config.LocalForward[key].Inner[k] = v
+				Config.Forward[key].Inner[k] = v
 			}
-			if _, ok := tmp[v.Bind]; ok {
-				return errors.New("duplicate LocalForward bind")
+			if val.Type == ssh.LOCAL {
+				if _, ok := tmp[v.Bind]; ok {
+					return errors.New("duplicate LocalForward bind")
+				}
+				tmp[v.Bind] = true
+			} else if val.Type == ssh.REMOTE {
+				if _, ok := tmpRemote[v.Bind]; ok {
+					return errors.New("duplicate RemoteForward bind")
+				}
+				tmpRemote[v.Bind] = true
+			} else {
+				return errors.New("error forward type")
 			}
-			tmp[v.Bind] = true
 		}
 	}
 
@@ -50,32 +65,17 @@ func LoadConfig() (err error) {
 		}
 	}
 
-	//检查每个remote里的inner是否有相同的bind
-	for key, val := range Config.RemoteForward {
-		tmp = make(map[string]bool)
-		for k, v := range val.Inner {
-			if !strings.Contains(v.Bind, ":") {
-				v.Bind = ":" + v.Bind
-				Config.RemoteForward[key].Inner[k] = v
-			}
-			if _, ok := tmp[v.Bind]; ok {
-				return errors.New("duplicate RemoteForward bind")
-			}
-			tmp[v.Bind] = true
-		}
-	}
-
 	return
 }
 
 type tomlConfig struct {
-	LocalForward  map[string]ForwardServer
-	RemoteForward map[string]ForwardServer
-	Proxy         map[string]ProxyServer
+	Forward map[string]ForwardServer
+	Proxy   map[string]ProxyServer
 }
 
 type ForwardServer struct {
-	// Forward
+	Type ssh.ForwardType
+
 	ssh.SSHConfig
 	Delay time.Duration
 	Inner map[string]*ssh.ForwardIni
