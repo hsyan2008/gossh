@@ -78,11 +78,11 @@ func completeAddr(str string) (string, error) {
 	}
 	tmp := strings.Split(str, ":")
 	if len(tmp) == 1 {
-		return fmt.Sprintf("127.0.0.1:%s", tmp[0]), nil
+		return fmt.Sprintf("0.0.0.0:%s", tmp[0]), nil
 	}
 
 	if tmp[0] == "" {
-		tmp[0] = "127.0.0.1"
+		tmp[0] = "0.0.0.0"
 	}
 
 	return strings.Join(tmp, ":"), nil
