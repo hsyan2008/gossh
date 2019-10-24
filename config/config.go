@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -31,10 +32,11 @@ func LoadConfig() (err error) {
 	tmpRemote := make(map[string]bool)
 	for key, val := range Config.Forward {
 		for k, v := range val.Inner {
-			if !strings.Contains(v.Bind, ":") {
-				v.Bind = ":" + v.Bind
-				Config.Forward[key].Inner[k] = v
+			v.Bind, err = completeAddr(v.Bind)
+			if err != nil {
+				return
 			}
+			Config.Forward[key].Inner[k] = v
 			if val.Type == ssh.LOCAL {
 				if _, ok := tmp[v.Bind]; ok {
 					return errors.New("duplicate LocalForward bind")
@@ -54,10 +56,11 @@ func LoadConfig() (err error) {
 	//检查所有proxy里的inner是否有相同的bind或和local相同
 	for key, val := range Config.Proxy {
 		for k, v := range val.Inner {
-			if !strings.Contains(v.Bind, ":") {
-				v.Bind = ":" + v.Bind
-				Config.Proxy[key].Inner[k] = v
+			v.Bind, err = completeAddr(v.Bind)
+			if err != nil {
+				return
 			}
+			Config.Proxy[key].Inner[k] = v
 			if _, ok := tmp[v.Bind]; ok {
 				return errors.New("duplicate Proxy bind")
 			}
@@ -66,6 +69,23 @@ func LoadConfig() (err error) {
 	}
 
 	return
+}
+
+//addr不处理，只处理bind，bind只能是本机，所以ip必须是127.0.0.1/0.0.0.0
+func completeAddr(str string) (string, error) {
+	if len(str) == 0 {
+		return str, errors.New("err addr")
+	}
+	tmp := strings.Split(str, ":")
+	if len(tmp) == 1 {
+		return fmt.Sprintf("127.0.0.1:%s", tmp[0]), nil
+	}
+
+	if tmp[0] == "" {
+		tmp[0] = "127.0.0.1"
+	}
+
+	return strings.Join(tmp, ":"), nil
 }
 
 type tomlConfig struct {
