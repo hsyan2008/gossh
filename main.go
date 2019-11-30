@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"time"
 
 	logger "github.com/hsyan2008/go-logger"
@@ -40,6 +41,7 @@ func main() {
 				lf, err := ssh.NewForward(val.Type, val.SSHConfig, v)
 				if err != nil {
 					logger.Warn(val.SSHConfig, err)
+					os.Exit(2)
 					return
 				}
 				defer lf.Close()
@@ -48,6 +50,7 @@ func main() {
 				lf, err := ssh.NewForward(val.Type, val.SSHConfig, nil)
 				if err != nil {
 					logger.Warn(val.SSHConfig, err)
+					os.Exit(2)
 					return
 				}
 				defer lf.Close()
@@ -55,6 +58,7 @@ func main() {
 					err = lf.Dial(val2.SSHConfig, v)
 					if err != nil {
 						logger.Warn(val2, err)
+						os.Exit(2)
 						return
 					}
 				}
@@ -73,6 +77,7 @@ func main() {
 				p, err := ssh.NewProxy(val.SSHConfig, v)
 				if err != nil {
 					logger.Warn(err)
+					os.Exit(2)
 					return
 				}
 				defer p.Close()
