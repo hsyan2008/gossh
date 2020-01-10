@@ -6,7 +6,6 @@ import (
 
 	logger "github.com/hsyan2008/go-logger"
 	"github.com/hsyan2008/gossh/config"
-	"github.com/hsyan2008/gossh/controllers"
 	"github.com/hsyan2008/hfw"
 	"github.com/hsyan2008/hfw/pac"
 	hfwsignal "github.com/hsyan2008/hfw/signal"
@@ -86,12 +85,12 @@ func main() {
 		}(val)
 	}
 
-	go func() {
-		hfw.Config.Server.Address = ":44444"
-		hfw.Config.Route.DefaultController = "index"
-		hfw.Config.Route.DefaultAction = "index"
-		hfw.Handler("/pac", &controllers.Pac{})
-	}()
+	// go func() {
+	// 	hfw.Config.Server.Address = ":44444"
+	// 	hfw.Config.Route.DefaultController = "index"
+	// 	hfw.Config.Route.DefaultAction = "index"
+	// 	hfw.Handler("/pac", &controllers.Pac{})
+	// }()
 
 	hfw.Run()
 }
