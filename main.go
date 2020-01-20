@@ -21,13 +21,6 @@ func main() {
 	}
 	logger.Warn(config.Config)
 
-	logger.Info("LoadPac")
-	err = pac.LoadDefault()
-	if err != nil {
-		logger.Warn("LoadPac:", err)
-		return
-	}
-
 	signalContext := hfwsignal.GetSignalContext()
 
 	logger.Info("create LocalForward")
@@ -67,6 +60,17 @@ func main() {
 	}
 	logger.Info("create Proxy")
 	for _, val := range config.Config.Proxy {
+		for _, v := range val.Inner {
+			if v.IsPac {
+				logger.Info("LoadPac")
+				err = pac.LoadDefault()
+				if err != nil {
+					logger.Warn("LoadPac:", err)
+					return
+				}
+				break
+			}
+		}
 		customPac(val.DomainPac)
 		signalContext.WgAdd()
 		go func(val config.ProxyServer) {
