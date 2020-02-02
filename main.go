@@ -30,7 +30,7 @@ func main() {
 			defer signalContext.WgDone()
 			time.Sleep(val.Delay * time.Second)
 			for _, v := range val.Inner {
-				lf, err := ssh.NewForward(val.Type, val.SSHConfig, v)
+				lf, err := ssh.NewForward(hfw.NewHTTPContext(), val.Type, val.SSHConfig, v)
 				if err != nil {
 					logger.Warn(val.SSHConfig, err)
 					os.Exit(2)
@@ -39,7 +39,7 @@ func main() {
 				defer lf.Close()
 			}
 			for _, val2 := range config.Config.Forward[key].Indirect {
-				lf, err := ssh.NewForward(val.Type, val.SSHConfig, nil)
+				lf, err := ssh.NewForward(hfw.NewHTTPContext(), val.Type, val.SSHConfig, nil)
 				if err != nil {
 					logger.Warn(val.SSHConfig, err)
 					os.Exit(2)
@@ -77,7 +77,7 @@ func main() {
 			defer signalContext.WgDone()
 			time.Sleep(val.Delay * time.Second)
 			for _, v := range val.Inner {
-				p, err := ssh.NewProxy(val.SSHConfig, v)
+				p, err := ssh.NewProxy(hfw.NewHTTPContext(), val.SSHConfig, v)
 				if err != nil {
 					logger.Warn(err)
 					os.Exit(2)
