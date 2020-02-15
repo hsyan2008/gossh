@@ -4,5 +4,5 @@ go 1.13
 
 require (
 	github.com/hsyan2008/go-logger v0.0.0-20191219103606-5634a077f1a0 // indirect
-	github.com/hsyan2008/hfw v0.0.0-20200205112730-6087b0944cb0
+	github.com/hsyan2008/hfw v0.0.0-20200215112713-eca1661e2610
 )

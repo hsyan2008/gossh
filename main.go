@@ -23,6 +23,8 @@ func main() {
 
 	signalContext := hfwsignal.GetSignalContext()
 
+	httpCtx := hfw.NewHTTPContext()
+
 	logger.Info("create LocalForward")
 	for key, val := range config.Config.Forward {
 		signalContext.WgAdd()
@@ -30,7 +32,7 @@ func main() {
 			defer signalContext.WgDone()
 			time.Sleep(val.Delay * time.Second)
 			for _, v := range val.Inner {
-				lf, err := ssh.NewForward(hfw.NewHTTPContext(), val.Type, val.SSHConfig, v)
+				lf, err := ssh.NewForward(httpCtx, val.Type, val.SSHConfig, v)
 				if err != nil {
 					logger.Warn(val.SSHConfig, err)
 					os.Exit(2)
@@ -39,7 +41,7 @@ func main() {
 				defer lf.Close()
 			}
 			for _, val2 := range config.Config.Forward[key].Indirect {
-				lf, err := ssh.NewForward(hfw.NewHTTPContext(), val.Type, val.SSHConfig, nil)
+				lf, err := ssh.NewForward(httpCtx, val.Type, val.SSHConfig, nil)
 				if err != nil {
 					logger.Warn(val.SSHConfig, err)
 					os.Exit(2)
@@ -55,7 +57,8 @@ func main() {
 					}
 				}
 			}
-			<-signalContext.Ctx.Done()
+			<-httpCtx.Ctx.Done()
+			signalContext.Cancel()
 		}(key, val)
 	}
 	logger.Info("create Proxy")
@@ -77,7 +80,7 @@ func main() {
 			defer signalContext.WgDone()
 			time.Sleep(val.Delay * time.Second)
 			for _, v := range val.Inner {
-				p, err := ssh.NewProxy(hfw.NewHTTPContext(), val.SSHConfig, v)
+				p, err := ssh.NewProxy(httpCtx, val.SSHConfig, v)
 				if err != nil {
 					logger.Warn(err)
 					os.Exit(2)
@@ -85,7 +88,8 @@ func main() {
 				}
 				defer p.Close()
 			}
-			<-signalContext.Ctx.Done()
+			<-httpCtx.Ctx.Done()
+			signalContext.Cancel()
 		}(val)
 	}
 
