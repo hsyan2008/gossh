@@ -1,96 +1,89 @@
 package main
 
 import (
-	"os"
 	"time"
 
-	logger "github.com/hsyan2008/go-logger"
 	"github.com/hsyan2008/gossh/config"
 	"github.com/hsyan2008/hfw"
 	"github.com/hsyan2008/hfw/pac"
-	hfwsignal "github.com/hsyan2008/hfw/signal"
+	"github.com/hsyan2008/hfw/signal"
 	"github.com/hsyan2008/hfw/ssh"
 )
 
 func main() {
-	logger.Info("LoadConfig")
+	signalContext := signal.GetSignalContext()
+
+	signalContext.Info("LoadConfig")
 	err := config.LoadConfig()
 	if err != nil {
-		logger.Warn("LoadConfig:", err)
+		signalContext.Warn("LoadConfig:", err)
 		return
 	}
-	logger.Warn(config.Config)
+	signalContext.Warn(config.Config)
 
-	signalContext := hfwsignal.GetSignalContext()
-
-	httpCtx := hfw.NewHTTPContext()
-
-	logger.Info("create LocalForward")
+	signalContext.Info("create LocalForward")
 	for key, val := range config.Config.Forward {
-		signalContext.WgAdd()
 		go func(key string, val config.ForwardServer) {
-			defer signalContext.WgDone()
 			time.Sleep(val.Delay * time.Second)
+			ctx := hfw.NewHTTPContext()
+			defer ctx.Cancel()
 			for _, v := range val.Inner {
-				lf, err := ssh.NewForward(httpCtx, val.Type, val.SSHConfig, v)
+				lf, err := ssh.NewForward(ctx, val.Type, val.SSHConfig, v)
 				if err != nil {
-					logger.Warn(val.SSHConfig, err)
-					os.Exit(2)
+					signalContext.Warn(val.SSHConfig, err)
+					signalContext.Cancel()
 					return
 				}
 				defer lf.Close()
 			}
 			for _, val2 := range config.Config.Forward[key].Indirect {
-				lf, err := ssh.NewForward(httpCtx, val.Type, val.SSHConfig, nil)
+				lf, err := ssh.NewForward(ctx, val.Type, val.SSHConfig, nil)
 				if err != nil {
-					logger.Warn(val.SSHConfig, err)
-					os.Exit(2)
+					signalContext.Warn(val.SSHConfig, err)
+					signalContext.Cancel()
 					return
 				}
 				defer lf.Close()
 				for _, v := range val2.Inner {
 					err = lf.Dial(val2.SSHConfig, v)
 					if err != nil {
-						logger.Warn(val2, err)
-						os.Exit(2)
+						signalContext.Warn(val2, err)
+						signalContext.Cancel()
 						return
 					}
 				}
 			}
-			<-httpCtx.Ctx.Done()
-			signalContext.Cancel()
 		}(key, val)
 	}
-	logger.Info("create Proxy")
+	signalContext.Info("create Proxy")
 	for _, val := range config.Config.Proxy {
 		for _, v := range val.Inner {
 			if v.IsPac {
-				logger.Info("LoadPac")
+				signalContext.Info("LoadPac")
 				err = pac.LoadDefault()
 				if err != nil {
-					logger.Warn("LoadPac:", err)
+					signalContext.Warn("LoadPac:", err)
+					signalContext.Cancel()
 					return
 				}
 				break
 			}
 		}
 		customPac(val.DomainPac)
-		signalContext.WgAdd()
-		go func(val config.ProxyServer) {
-			defer signalContext.WgDone()
-			time.Sleep(val.Delay * time.Second)
-			for _, v := range val.Inner {
-				p, err := ssh.NewProxy(httpCtx, val.SSHConfig, v)
+		time.Sleep(val.Delay * time.Second)
+		for _, v := range val.Inner {
+			go func(v *ssh.ProxyIni) {
+				ctx := hfw.NewHTTPContext()
+				defer ctx.Cancel()
+				p, err := ssh.NewProxy(ctx, val.SSHConfig, v)
 				if err != nil {
-					logger.Warn(err)
-					os.Exit(2)
+					signalContext.Warn(err)
+					signalContext.Cancel()
 					return
 				}
 				defer p.Close()
-			}
-			<-httpCtx.Ctx.Done()
-			signalContext.Cancel()
-		}(val)
+			}(v)
+		}
 	}
 
 	// go func() {
@@ -104,13 +97,13 @@ func main() {
 }
 
 func customPac(domainPac config.DomainPac) {
-	logger.Infof("%#v", domainPac)
+	signal.GetSignalContext().Infof("%#v", domainPac)
 	for _, v := range domainPac.Deny {
-		logger.Warn("pac", v, false)
+		signal.GetSignalContext().Warn("pac", v, false)
 		pac.Add(v, false)
 	}
 	for _, v := range domainPac.Allow {
-		logger.Warn("pac", v, true)
+		signal.GetSignalContext().Warn("pac", v, true)
 		pac.Add(v, true)
 	}
 }
