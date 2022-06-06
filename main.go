@@ -19,7 +19,6 @@ func main() {
 		signalContext.Warn("LoadConfig:", err)
 		return
 	}
-	signalContext.Warn(config.Config)
 
 	signalContext.Info("create LocalForward")
 	for key, val := range config.Config.Forward {
@@ -38,26 +37,26 @@ func main() {
 					defer lf.Close()
 				}(v)
 			}
-			for _, val2 := range config.Config.Forward[key].Indirect {
-				go func(val2 config.ForwardIndirect) {
-					ctx := hfw.NewHTTPContext()
-					defer ctx.Cancel()
-					lf, err := ssh.NewForward(ctx, val.Type, val.SSHConfig, nil)
-					if err != nil {
-						signalContext.Warn(val.SSHConfig, err)
-						signalContext.Cancel()
-						return
-					}
-					defer lf.Close()
-					for _, v := range val2.Inner {
-						err = lf.Dial(val2.SSHConfig, v)
+			for _, val2 := range val.Indirect {
+				for _, v := range val2.Inner {
+					go func(val2 config.ForwardIndirect, v *ssh.ForwardIni) {
+						ctx := hfw.NewHTTPContext()
+						defer ctx.Cancel()
+						lf, err := ssh.NewForward(ctx, val.Type, val.SSHConfig, nil)
 						if err != nil {
-							signalContext.Warn(val2, err)
+							signalContext.Warn(val.SSHConfig, err)
 							signalContext.Cancel()
 							return
 						}
-					}
-				}(val2)
+						defer lf.Close()
+						err = lf.Dial(val2.SSHConfig, v)
+						if err != nil {
+							signalContext.Warn(val2, v, err)
+							signalContext.Cancel()
+							return
+						}
+					}(val2, v)
+				}
 			}
 		}(key, val)
 	}
