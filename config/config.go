@@ -96,17 +96,9 @@ type tomlConfig struct {
 type ForwardServer struct {
 	Type ssh.ForwardType
 
-	ssh.SSHConfig
 	Delay time.Duration
-	Inner map[string]*ssh.ForwardIni
 
-	//二次登陆ssh
-	Indirect map[string]ForwardIndirect
-}
-
-type ForwardIndirect struct {
-	ssh.SSHConfig
-	Inner map[string]*ssh.ForwardIni
+	ssh.ForwardConfig
 }
 
 type ProxyServer struct {

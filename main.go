@@ -24,42 +24,12 @@ func main() {
 	for key, val := range config.Config.Forward {
 		go func(key string, val config.ForwardServer) {
 			time.Sleep(val.Delay * time.Second)
-			for _, v := range val.Inner {
-				go func(v *ssh.ForwardIni) {
-					ctx := hfw.NewHTTPContext()
-					defer ctx.Cancel()
-					lf, err := ssh.NewForward(ctx, val.Type, val.SSHConfig, v)
-					if err != nil {
-						signalContext.Warn(val.SSHConfig, err)
-						signalContext.Cancel()
-						return
-					}
-					defer lf.Close()
-				}(v)
-			}
-			for _, val2 := range val.Indirect {
-				for _, v := range val2.Inner {
-					go func(val2 config.ForwardIndirect, v *ssh.ForwardIni) {
-						ctx := hfw.NewHTTPContext()
-						defer ctx.Cancel()
-						lf, err := ssh.NewForward(ctx, val.Type, val.SSHConfig, nil)
-						if err != nil {
-							signalContext.Warn(val.SSHConfig, err)
-							signalContext.Cancel()
-							return
-						}
-						defer lf.Close()
-						err = lf.Dial(val2.SSHConfig, v)
-						if err != nil {
-							signalContext.Warn(val2, v, err)
-							signalContext.Cancel()
-							return
-						}
-					}(val2, v)
-				}
-			}
+			ctx := hfw.NewHTTPContext()
+			defer ctx.Cancel()
+			ssh.NewForward(ctx, val.Type, val.ForwardConfig)
 		}(key, val)
 	}
+
 	signalContext.Info("create Proxy")
 	for _, val := range config.Config.Proxy {
 		for _, v := range val.Inner {

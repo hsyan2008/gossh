@@ -2,7 +2,7 @@ module github.com/hsyan2008/gossh
 
 go 1.18
 
-require github.com/hsyan2008/hfw v0.0.0-20220606030102-2751422cbec3
+require github.com/hsyan2008/hfw v0.0.0-20220606111347-378ecdcbea30
 
 require (
 	acln.ro/zerocopy v0.0.0-20190410132315-ac749309e897 // indirect
